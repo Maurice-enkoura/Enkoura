@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mes Événements</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .sidebar, .navbar-custom {
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
+    .sidebar {
+      height: 100vh;
+      width: 250px;
+      background-color: #0d6efd;
+      padding-top: 2rem;
+      color: white;
+      z-index: 500; /* Assurer que la sidebar est au-dessus du contenu */
+    }
+    .sidebar a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0.75rem 1.5rem;
+      color: white;
+      text-decoration: none;
+      transition: background 0.2s;
+      font-weight: 500;
+    }
+    .sidebar a:hover, .sidebar a.active {
+      background-color: #0b5ed7;
+    }
+    .content-wrapper {
+      margin-left: 250px;
+      padding: 2rem;
+      z-index: 100;
+    }
+    .navbar-custom {
+      background-color: #ffffff;
+      border-bottom: 1px solid #dee2e6;
+      z-index: 1001; /* S'assurer que la navbar est au-dessus de la sidebar */
+    }
+    .card-shadow {
+      box-shadow: 0 6px 18px rgba(0,0,0,0.07);
+      border-radius: 0.75rem;
+    }
+    /* Ajustement pour le bouton de retour */
+    .btn-back {
+      margin-bottom: 20px;
+      z-index: 1002; /* Positionner le bouton au-dessus du contenu */
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h3><i class="bi bi-calendar-event"></i> Dashboard</h3>
+    <a href="index.html"><i class="bi bi-grid-fill"></i> Tableau de bord</a>
+    <a href="mes_evenements.html" class="active"><i class="bi bi-calendar-check"></i> Mes événements</a>
+    <a href="notifications.html"><i class="bi bi-bell"></i> Notifications</a>
+    <a href="profil.html"><i class="bi bi-person-circle"></i> Profil</a>
+    <a href="contact.html"><i class="bi bi-envelope-fill"></i> Contact</a>
+    <a href="logout.html"><i class="bi bi-box-arrow-right"></i> Déconnexion</a>
+  </div>
+
+  <!-- Contenu principal -->
+  <div class="container py-4 content-wrapper">
+    <!-- Bouton de retour -->
+    <a href="index.html" class="btn btn-secondary btn-back"><i class="bi bi-arrow-left"></i> Retour</a>
+    
+    <h2>Mes événements</h2>
+    <div class="table-responsive mb-4">
+      <table class="table table-bordered">
+        <thead class="table-light">
+          <tr>
+            <th>Titre</th>
+            <th>Date</th>
+            <th>Début</th>
+            <th>Fin</th>
+            <th>Description</th>
+            <th>Statut</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="eventList">
+          <!-- Les événements seront injectés ici par JavaScript -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // Exemple de tableau d'événements
+    const events = [
+      {
+        title: 'Événement 1',
+        date: '2025-04-25',
+        start: '09:00',
+        end: '12:00',
+        description: 'Description de l\'événement 1',
+        status: 'Planifié'
+      },
+      {
+        title: 'Événement 2',
+        date: '2025-04-26',
+        start: '14:00',
+        end: '17:00',
+        description: 'Description de l\'événement 2',
+        status: 'En cours'
+      },
+      {
+        title: 'Événement 3',
+        date: '2025-04-27',
+        start: '08:30',
+        end: '10:30',
+        description: 'Description de l\'événement 3',
+        status: 'Terminé'
+      }
+    ];
+
+    // Fonction pour afficher les événements dans le tableau
+    function updateEventList() {
+      const eventList = document.getElementById('eventList');
+      eventList.innerHTML = '';  // Réinitialiser le contenu
+
+      events.forEach(event => {
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+          <td>${event.title}</td>
+          <td>${event.date}</td>
+          <td>${event.start}</td>
+          <td>${event.end}</td>
+          <td>${event.description}</td>
+          <td>${event.status}</td>
+          <td>
+            <button class="btn btn-primary btn-sm" onclick="editEvent('${event.title}')"><i class="bi bi-pencil"></i> Modifier</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteEvent('${event.title}')"><i class="bi bi-trash"></i> Supprimer</button>
+          </td>
+        `;
+        eventList.appendChild(row);
+      });
+    }
+
+    // Fonction de modification (à implémenter)
+    function editEvent(title) {
+      alert('Modifier l\'événement: ' + title);
+    }
+
+    // Fonction de suppression (à implémenter)
+    function deleteEvent(title) {
+      const confirmDelete = confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');
+      if (confirmDelete) {
+        // Simuler la suppression de l'événement
+        const eventIndex = events.findIndex(event => event.title === title);
+        if (eventIndex > -1) {
+          events.splice(eventIndex, 1);
+          updateEventList();  // Mettre à jour la liste
+        }
+      }
+    }
+
+    // Appeler la fonction pour afficher les événements lors du chargement de la page
+    updateEventList();
+  </script>
+
+</body>
+</html>

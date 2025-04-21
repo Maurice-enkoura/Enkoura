@@ -9,61 +9,103 @@
   <style>
     body {
       display: flex;
-      min-height: 100vh;
       margin: 0;
-      background-color: #f8f9fa;
+      background-color: #f1f3f5;
+      font-family: 'Segoe UI', sans-serif;
     }
+
     .sidebar {
       width: 260px;
-      background-color: #007bff; /* Changer la couleur ici en bleu */
+      background-color: #0d6efd;
       color: white;
       padding: 30px 20px;
       height: 100vh;
       position: fixed;
       top: 0;
       left: 0;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
     }
 
     .sidebar h3 {
-      font-size: 1.4rem;
-      margin-bottom: 30px;
+      font-size: 1.5rem;
+      margin-bottom: 40px;
     }
 
     .sidebar a {
-      display: block;
-      color: #ccc;
+      display: flex;
+      align-items: center;
+      color: #ddd;
       text-decoration: none;
-      padding: 10px 0;
-      font-size: 1.1rem;
-      transition: color 0.3s;
+      padding: 10px 15px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .sidebar a i {
+      margin-right: 12px;
+      font-size: 1.2rem;
     }
 
     .sidebar a:hover,
     .sidebar a.active {
+      background-color: #0b5ed7;
       color: #fff;
-    }
-
-    .sidebar i {
-      margin-right: 10px;
     }
 
     .main-content {
       margin-left: 260px;
-      padding: 40px;
+      padding: 40px 60px;
+      flex-grow: 1;
       width: 100%;
     }
 
+    .card {
+      border: none;
+      border-radius: 15px;
+    }
+
     .card-header {
-      background-color: #f8f9fa;
-      font-weight: bold;
+      background-color: #ffffff;
+      font-weight: 600;
+      border-bottom: 1px solid #e9ecef;
+    }
+
+    .btn-secondary {
+      border-radius: 8px;
+    }
+
+    .profile-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background-color: #dee2e6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      color: #6c757d;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+      }
+      .main-content {
+        margin-left: 0;
+        padding: 20px;
+      }
     }
   </style>
 </head>
-<body class="bg-light">
+<body>
 
   <!-- Sidebar -->
   <div class="sidebar">
-    <h3><i class="bi bi-calendar-event"></i> Dashboard</h3>
+    <h3><i class="bi bi-calendar-event"></i> Planning</h3>
     <a href="front.php" class="active"><i class="bi bi-grid-fill"></i> Tableau de bord</a>
     <a href="mes_evenements.html"><i class="bi bi-calendar-check"></i> Mes événements</a>
     <a href="notifications.html"><i class="bi bi-bell"></i> Notifications</a>
@@ -74,32 +116,46 @@
 
   <!-- Main content -->
   <div class="main-content">
-    <!-- Retour button -->
+    <!-- Retour -->
     <button class="btn btn-secondary mb-4" onclick="window.history.back();">
       <i class="bi bi-arrow-left"></i> Retour
     </button>
-    
+
     <h2 class="mb-4"><i class="bi bi-person-circle"></i> Mon Profil</h2>
-    
+
     <div class="card shadow-sm">
       <div class="card-header">
-        <h5 class="mb-0">Informations de profil</h5>
+        <h5 class="mb-0">Informations personnelles</h5>
       </div>
       <div class="card-body">
+        <div class="text-center mb-4">
+          <div class="profile-avatar mx-auto"><i class="bi bi-person"></i></div>
+          <h5>Jean Dupont</h5>
+          <p class="text-muted mb-0">jean.dupont@example.com</p>
+        </div>
+
         <form>
-          <div class="mb-3">
-            <label class="form-label">Nom</label>
-            <input type="text" class="form-control" value="Jean Dupont" required>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Nom</label>
+              <input type="text" class="form-control" value="Jean Dupont" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-control" value="jean.dupont@example.com" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Mot de passe</label>
+              <input type="password" class="form-control" value="•••••••••" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Confirmer le mot de passe</label>
+              <input type="password" class="form-control" value="•••••••••" required>
+            </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input type="email" class="form-control" value="jean.dupont@example.com" required>
+          <div class="text-end">
+            <button type="submit" class="btn btn-primary">Mettre à jour</button>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Mot de passe</label>
-            <input type="password" class="form-control" value="•••••••••" required>
-          </div>
-          <button type="submit" class="btn btn-primary">Mettre à jour</button>
         </form>
       </div>
     </div>

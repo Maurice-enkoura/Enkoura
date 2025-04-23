@@ -62,7 +62,7 @@
         <a href="#" class="btn btn-outline-light me-2">
           <i class="bi bi-person-circle me-1"></i> Profil
         </a>
-        <a href="#" class="btn btn-outline-danger">
+        <a href="logout.php" class="btn btn-outline-danger">
           <i class="bi bi-box-arrow-right me-1"></i> Déconnexion
         </a>
       </div>

@@ -133,7 +133,7 @@
   <div class="sidebar">
     <h3><i class="bi bi-calendar-event"></i> Dashboard</h3>
     <a href="front.php" class="active"><i class="bi bi-grid-fill"></i> Tableau de bord</a>
-    <a href="mes_evenements.html"><i class="bi bi-calendar-check"></i> Mes événements</a>
+    <a href="mes_evenements.php"><i class="bi bi-calendar-check"></i> Mes événements</a>
     <a href="notifications.html"><i class="bi bi-bell-fill"></i> Notifications</a>
     <a href="profil.html"><i class="bi bi-person-circle"></i> Profil</a>
     <a href="contact.html"><i class="bi bi-envelope-fill"></i> Contact</a>
@@ -148,28 +148,44 @@
 
     <h2><i class="bi bi-bell"></i> Notifications</h2>
 
-    <div class="notification-item" aria-label="Notification 1">
-      <i class="bi bi-pin-angle-fill"></i>
-      <div class="notification-text">
-        📌 Votre événement <strong>“Réunion d'équipe”</strong> commence dans 1 heure.
-      </div>
-    </div>
-
-    <div class="notification-item" aria-label="Notification 2">
-      <i class="bi bi-check-circle-fill"></i>
-      <div class="notification-text">
-        ✅ Vous avez terminé <strong>“Présentation client”</strong>.
-      </div>
-    </div>
-
-    <div class="notification-item" aria-label="Notification 3">
-      <i class="bi bi-arrow-repeat"></i>
-      <div class="notification-text">
-        🔄 Un événement a été modifié : <strong>“Visioconférence partenaires”</strong>.
-      </div>
+    <div id="notifications-container">
+      <!-- Notifications will be loaded here -->
     </div>
 
   </div>
+
+  <script>
+    // Fonction pour charger les notifications
+    function loadNotifications() {
+      fetch('get_notifications.php')  // Le script PHP qui récupère les notifications
+        .then(response => response.json())
+        .then(data => {
+          const notificationContainer = document.getElementById('notifications-container');
+          notificationContainer.innerHTML = '';  // Vide le contenu actuel des notifications
+
+          data.forEach(notification => {
+            const notificationItem = document.createElement('div');
+            notificationItem.classList.add('notification-item');
+            
+            notificationItem.innerHTML = `
+              <i class="bi bi-pin-angle-fill"></i>
+              <div class="notification-text">
+                📌 ${notification.message}
+              </div>
+            `;
+            
+            notificationContainer.appendChild(notificationItem);
+          });
+        })
+        .catch(error => console.error('Erreur lors de la récupération des notifications:', error));
+    }
+
+    // Récupérer les notifications toutes les 5 secondes
+    setInterval(loadNotifications, 5000);
+    
+    // Charger immédiatement les notifications au démarrage
+    loadNotifications();
+  </script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

@@ -57,18 +57,31 @@
       box-shadow: 0 6px 18px rgba(0,0,0,0.07);
       border-radius: 0.75rem;
     }
+    
+
+
     .scroll-to-top {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background-color: #0d6efd;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 50%;
-      font-size: 18px;
-      cursor: pointer;
-    }
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  display: none;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 45px;
+  height: 45px;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 9999;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  transition: opacity 0.3s ease;
+}
+
+.scroll-to-top:hover {
+  background-color: #0056b3;
+}
+
   </style>
 </head>
 <body>
@@ -77,7 +90,7 @@
   <div class="sidebar">
     <h3><i class="bi bi-calendar-event"></i> Dashboard</h3>
     <a href="#" class="active"><i class="bi bi-grid-fill"></i> Tableau de bord</a>
-    <a href="mes_evenements.html"><i class="bi bi-calendar-check"></i> Mes événements</a>
+    <a href="mes_evenements.php"><i class="bi bi-calendar-check"></i> Mes événements</a>
     <a href="notifications.html"><i class="bi bi-bell"></i> Notifications</a>
     <a href="profil.html"><i class="bi bi-person-circle"></i> Profil</a>
     <a href="contact.html"><i class="bi bi-envelope-fill"></i> Contact</a>
@@ -212,174 +225,213 @@
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-<script>
-  // Variable pour stocker les événements
-let events = [];
-let editIndex = null;
+  <script>
+  let events = [];
+  let editIndex = null;
 
-// Rafraîchir la liste des événements toutes les 30 secondes
-setInterval(refreshEvents, 30000); // Rafraîchissement toutes les 30 secondes
+  document.addEventListener('DOMContentLoaded', () => {
+    fetchEvents();
 
-// Fonction pour rafraîchir la liste des événements et le calendrier
-function refreshEvents() {
-    updateEventList();
-    updateCalendar();
-    updateStats();
-}
+    document.getElementById('resetButton')?.addEventListener('click', () => {
+      document.getElementById('eventForm').reset();
+      editIndex = null;
+    });
 
-// Fonction pour réinitialiser le formulaire sans fermer le modal
-document.getElementById('resetButton').addEventListener('click', function () {
-  document.getElementById('eventForm').reset();
-  editIndex = null; // Réinitialiser l'index d'édition
-});
+    document.getElementById('eventForm')?.addEventListener('submit', handleSubmit);
+    document.getElementById('searchInput')?.addEventListener('input', searchEvent);
+  });
 
-// Fonction pour ajouter ou modifier un événement
-document.getElementById('eventForm').addEventListener('submit', function (e) {
-  e.preventDefault();
+  async function handleSubmit(e) {
+    e.preventDefault();
 
-  const title = document.getElementById('eventTitle').value;
-  const date = document.getElementById('eventDate').value;
-  const startTime = document.getElementById('eventStartTime').value;
-  const endTime = document.getElementById('eventEndTime').value;
-  const description = document.getElementById('eventDescription').value;
-  const status = document.getElementById('eventStatus').value;
+    const newEvent = {
+      title: document.getElementById('eventTitle').value,
+      date: document.getElementById('eventDate').value,
+      startTime: document.getElementById('eventStartTime').value,
+      endTime: document.getElementById('eventEndTime').value,
+      description: document.getElementById('eventDescription').value,
+      status: document.getElementById('eventStatus').value
+    };
 
-  const newEvent = {
-    title,
-    date,
-    startTime,
-    endTime,
-    description,
-    status,
-  };
+    const url = editIndex === null ? 'create_event.php' : 'update_event.php';
 
-  if (editIndex === null) {
-    // Ajouter un nouvel événement
-    events.push(newEvent);
-  } else {
-    // Modifier un événement existant
-    events[editIndex] = newEvent;
+    if (editIndex !== null) {
+      newEvent.id = events[editIndex].id;
+    }
+
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newEvent)
+    });
+
+    document.getElementById('eventForm').reset();
+    editIndex = null;
+
+    const modal = bootstrap.Modal.getInstance(document.getElementById('eventModal'));
+    modal?.hide();
+
+    await fetchEvents();
   }
 
-  // Rafraîchir la liste et le calendrier sans recharger la page
-  refreshEvents();
+  async function fetchEvents() {
+    try {
+      const res = await fetch('read_events.php');
+      events = await res.json();
+      refreshEvents();
+    } catch (err) {
+      console.error('Erreur de récupération des événements :', err);
+    }
+  }
 
-  // Réinitialiser le formulaire après ajout ou modification
-  document.getElementById('eventForm').reset();
-  editIndex = null; // Réinitialiser l'index d'édition
-  const modal = bootstrap.Modal.getInstance(document.getElementById('eventModal'));
-  modal.hide();
-});
+  function refreshEvents() {
+    updateEventList();
+    updateStats();
+    updateCalendar();
+  }
 
-// Mise à jour du tableau des événements
-function updateEventList() {
-  const eventList = document.getElementById('eventList');
-  eventList.innerHTML = ''; // Réinitialise la liste avant de la remplir
+  function updateEventList(filteredEvents = events) {
+    const tbody = document.getElementById('eventList');
+    if (!tbody) return;
 
-  events.forEach((event, index) => {
-    eventList.innerHTML += `
-      <tr>
+    tbody.innerHTML = '';
+    filteredEvents.forEach((event, index) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
         <td>${event.title}</td>
         <td>${event.date}</td>
         <td>${event.startTime}</td>
         <td>${event.endTime}</td>
         <td>${event.description}</td>
-        <td>${event.status}</td>
+        <td><span class="badge bg-${getStatusColor(event.status)}">${event.status}</span></td>
         <td>
-          <button class="btn btn-warning" onclick="editEvent(${index})">Modifier</button>
-          <button class="btn btn-danger" onclick="deleteEvent(${index})">Supprimer</button>
+          <button class="btn btn-sm btn-warning me-1" onclick="editEvent(${index})"><i class="bi bi-pencil"></i></button>
+          <button class="btn btn-sm btn-danger" onclick="deleteEvent(${index})"><i class="bi bi-trash"></i></button>
         </td>
-      </tr>
-    `;
-  });
-}
+      `;
+      tbody.appendChild(row);
+    });
+  }
 
-// Fonction pour modifier un événement
-function editEvent(index) {
-  const event = events[index];
-  editIndex = index; // Stocker l'index de l'événement en cours de modification
+  function updateStats() {
+    document.getElementById('statUpcoming').innerText = events.filter(e => e.status === 'À venir').length;
+    document.getElementById('statOngoing').innerText = events.filter(e => e.status === 'En cours').length;
+    document.getElementById('statCompleted').innerText = events.filter(e => e.status === 'Terminé').length;
+  }
 
-  // Remplir le formulaire avec les données de l'événement
-  document.getElementById('eventTitle').value = event.title;
-  document.getElementById('eventDate').value = event.date;
-  document.getElementById('eventStartTime').value = event.startTime;
-  document.getElementById('eventEndTime').value = event.endTime;
-  document.getElementById('eventDescription').value = event.description;
-  document.getElementById('eventStatus').value = event.status;
+  function updateCalendar() {
+    const calendarEl = document.getElementById('calendar');
+    if (!calendarEl) return;
 
-  // Ouvrir le modal
-  const modal = new bootstrap.Modal(document.getElementById('eventModal'));
-  modal.show();
-}
+    calendarEl.innerHTML = '';
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'dayGridMonth',
+      height: 500,
+      selectable: true,
+      events: events.map(e => ({
+        title: e.title,
+        start: `${e.date}T${e.startTime}`,
+        end: `${e.date}T${e.endTime}`,
+        description: e.description
+      })),
+      eventClick: function (info) {
+        alert(`Événement : ${info.event.title}\n${info.event.extendedProps.description}`);
+      },
+      dateClick: function (info) {
+        // Pré-remplir le champ date
+        document.getElementById('eventDate').value = info.dateStr;
 
-// Fonction pour supprimer un événement
-function deleteEvent(index) {
-  events.splice(index, 1);
-  refreshEvents();
-}
+        // Réinitialiser les autres champs
+        document.getElementById('eventTitle').value = '';
+        document.getElementById('eventStartTime').value = '';
+        document.getElementById('eventEndTime').value = '';
+        document.getElementById('eventDescription').value = '';
+        document.getElementById('eventStatus').value = 'À venir';
 
-// Mise à jour du calendrier avec les événements
-function updateCalendar() {
-  const calendarEl = document.getElementById('calendar');
-  const calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: 'dayGridMonth',
-    headerToolbar: {
-      left: 'prev,next today',
-      center: 'title',
-      right: 'dayGridMonth,timeGridWeek,timeGridDay'
-    },
-    events: events.map(event => ({
-      title: event.title,
-      start: `${event.date}T${event.startTime}`,
-      end: `${event.date}T${event.endTime}`,
-    })),
-    dateClick: function(info) {
-      const selectedDate = info.dateStr;
-      document.getElementById('eventDate').value = selectedDate;
-      const modal = new bootstrap.Modal(document.getElementById('eventModal'));
-      modal.show();
+        editIndex = null;
+
+        const modal = new bootstrap.Modal(document.getElementById('eventModal'));
+        modal.show();
+      }
+    });
+
+    calendar.render();
+  }
+
+  function getStatusColor(status) {
+    switch (status) {
+      case 'À venir': return 'primary';
+      case 'En cours': return 'warning';
+      case 'Terminé': return 'success';
+      default: return 'secondary';
+    }
+  }
+
+  function editEvent(index) {
+    const e = events[index];
+    document.getElementById('eventTitle').value = e.title;
+    document.getElementById('eventDate').value = e.date;
+    document.getElementById('eventStartTime').value = e.startTime;
+    document.getElementById('eventEndTime').value = e.endTime;
+    document.getElementById('eventDescription').value = e.description;
+    document.getElementById('eventStatus').value = e.status;
+
+    editIndex = index;
+    const modal = new bootstrap.Modal(document.getElementById('eventModal'));
+    modal.show();
+  }
+
+  async function deleteEvent(index) {
+    if (confirm('Voulez-vous vraiment supprimer cet événement ?')) {
+      const id = events[index].id;
+      await fetch('delete_event.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+
+      await fetchEvents();
+    }
+  }
+
+  function searchEvent() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+
+    const filtered = events.filter(e =>
+      e.title.toLowerCase().includes(query) ||
+      e.description.toLowerCase().includes(query) ||
+      e.status.toLowerCase().includes(query)
+    );
+
+    updateEventList(filtered);
+  }
+
+  // Mise à jour automatique toutes les 30 secondes
+  setInterval(fetchEvents, 30000);
+
+
+
+
+    // Afficher le bouton quand on scroll vers le bas
+    window.addEventListener('scroll', function () {
+    const scrollBtn = document.querySelector('.scroll-to-top');
+    if (window.scrollY > 100) {
+      scrollBtn.style.display = 'block';
+    } else {
+      scrollBtn.style.display = 'none';
     }
   });
-  calendar.render();
-}
 
-// Mise à jour des statistiques
-function updateStats() {
-  const upcoming = events.filter(e => e.status === 'À venir').length;
-  const ongoing = events.filter(e => e.status === 'En cours').length;
-  const completed = events.filter(e => e.status === 'Terminé').length;
-
-  document.getElementById('statUpcoming').textContent = upcoming;
-  document.getElementById('statOngoing').textContent = ongoing;
-  document.getElementById('statCompleted').textContent = completed;
-}
-
-// Initialisation du tableau et du calendrier
-updateEventList();
-updateCalendar();
-updateStats();
-
-// Fonction de recherche des événements
-function searchEvent() {
-  const searchValue = document.getElementById('searchInput').value.toLowerCase();
-  const filteredEvents = events.filter(e =>
-    e.title.toLowerCase().includes(searchValue) ||
-    e.description.toLowerCase().includes(searchValue)
-  );
-  events = filteredEvents; // Met à jour le tableau des événements filtrés
-  updateEventList(); // Met à jour la liste avec les événements filtrés
-}
-
-// Fonction de défilement vers le haut
-function scrollToTop() {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
+  // Fonction pour revenir en haut
+  function scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth' // défilement doux
+    });
+  }
 </script>
+
 
 </body>
 </html>
-
-
-
 
